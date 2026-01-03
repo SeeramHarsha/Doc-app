@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model DoctorSettings {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  dayStartTime String // e.g. "09:00"
+  dayEndTime   String // e.g. "17:00"
+  slotDuration Int    @default(30)
+}
+
+model Slot {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  startTime DateTime @unique
+  status    String   @default("AVAILABLE") // AVAILABLE, BOOKED, BLOCKED
+  
+  appointment Appointment?
+}
+
+model Appointment {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt    DateTime @default(now())
+  patientName  String
+  patientPhone String
+  
+  slotId       String   @unique @db.ObjectId
+  slot         Slot     @relation(fields: [slotId], references: [id])
+}
